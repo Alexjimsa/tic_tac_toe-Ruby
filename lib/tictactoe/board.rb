@@ -1,18 +1,41 @@
 # The Board class represents the Tic-Tac-Toe game board.
 # It manages the positions on the grid and tracks the state of each cell (either empty, marked by X, or marked by O).
 class Board
+  WINNING_COMBINATIONS = [
+    ['a1', 'b1', 'c1'], ['a2', 'b2', 'c2'], ['a3', 'b3', 'c3'],  # Rows
+    ['a1', 'a2', 'a3'], ['b1', 'b2', 'b3'], ['c1', 'c2', 'c3'],  # Columns
+    ['a1', 'b2', 'c3'], ['c1', 'b2', 'a3']                       # Diagonals
+  ].map(&:freeze).freeze # With #freeze we make this objects inmutable, constants
+
   attr_accessor :positions
 
   # Initializes the board with a 3x3 grid.
-  # @positions stores the current state of each cell (keys as grid positions like 'a1', 'b2').
-  # @register is an array used to display the board visually, initialized with dashes ('-') to represent empty spots.
   def initialize
+    # @positions stores the current state of each cell (keys as grid positions like 'a1', 'b2').
     @positions = { 'a1' => nil, 'b1' => nil, 'c1' => nil,
                    'a2' => nil, 'b2' => nil, 'c2' => nil,
                    'a3' => nil, 'b3' => nil, 'c3' => nil }
-    @register = ['-', '-', '-',
-                 '-', '-', '-',
-                 '-', '-', '-']
+    # @register is an array used to display the board visually, initialized with dashes ('-') to represent empty spots.
+    @register = %i[- - -
+                   - - -
+                   - - -]
+  end
+
+  # Updates the position and register based on the player's move.
+  def update(position, player)
+    positions[position] = player
+    index = position_to_index(position)
+    @register[index] = player
+  end
+
+  # Converts board position (like 'a1', 'b2') to the corresponding index in @register.
+  def position_to_index(position)
+    mapping = {
+      'a1' => 0, 'b1' => 2, 'c1' => 3,
+      'a2' => 4, 'b2' => 5, 'c2' => 6,
+      'a3' => 7, 'b3' => 8, 'c3' => 9
+    }
+    mapping[position]
   end
 
   # Displays the current state of the board in a readable format.
@@ -27,19 +50,24 @@ class Board
   # Determines if player X has won by checking possible winning combinations on the board.
   def x_wins?
     # TODO: Implement logic to check if player X has a winning combination
-    p
+    for combo in WINNING_COMBINATIONS
+      return true if positions[combo[0]] && positions[combo[1]] && positions[combo[2]] == :x
+    end
   end
 
   # Determines if player O has won by checking possible winning combinations on the board.
   def o_wins?
     # TODO: Implement logic to check if player O has a winning combination
-    p
+    for combo in WINNING_COMBINATIONS
+      return true if positions[combo[0]] && positions[combo[1]] && positions[combo[2]] == :o
+    end
   end
 
   # Determines if the game is a draw (i.e., all cells are filled with no winner).
   def draw?
-    # TODO: Implement logic to check if the board is full and there is no winner
-    p
+    return true unless positions.values.include?(nil)
+
+    false
   end
 end
 

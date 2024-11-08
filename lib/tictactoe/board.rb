@@ -7,7 +7,7 @@ class Board
     ['a1', 'b2', 'c3'], ['c1', 'b2', 'a3']                       # Diagonals
   ].map(&:freeze).freeze # With #freeze we make this objects inmutable, constants
 
-  attr_accessor :positions
+  attr_accessor :positions, :register
 
   # Initializes the board with a 3x3 grid.
   def initialize
@@ -23,19 +23,31 @@ class Board
 
   # Updates the position and register based on the player's move.
   def update(position, player)
-    positions[position] = player
+    @positions[position] = player
     index = position_to_index(position)
     @register[index] = player
+  end
+
+  def reset
+    @positions = @positions.map { |key| nil }
+    @register = @register.map { |item| :- }
   end
 
   # Converts board position (like 'a1', 'b2') to the corresponding index in @register.
   def position_to_index(position)
     mapping = {
-      'a1' => 0, 'b1' => 2, 'c1' => 3,
-      'a2' => 4, 'b2' => 5, 'c2' => 6,
-      'a3' => 7, 'b3' => 8, 'c3' => 9
+      'a1' => 0, 'b1' => 1, 'c1' => 2,
+      'a2' => 3, 'b2' => 4, 'c2' => 5,
+      'a3' => 6, 'b3' => 7, 'c3' => 8
     }
     mapping[position]
+  end
+
+  def valid_position?(position)
+    return false unless positions.keys.include?(position)
+    return false unless positions[position].nil?
+
+    true
   end
 
   # Displays the current state of the board in a readable format.
@@ -51,16 +63,20 @@ class Board
   def x_wins?
     # TODO: Implement logic to check if player X has a winning combination
     for combo in WINNING_COMBINATIONS
-      return true if positions[combo[0]] && positions[combo[1]] && positions[combo[2]] == :x
+      return true if positions[combo[0]] == :x && positions[combo[1]] == :x && positions[combo[2]] == :x
     end
+
+    false
   end
 
   # Determines if player O has won by checking possible winning combinations on the board.
   def o_wins?
     # TODO: Implement logic to check if player O has a winning combination
     for combo in WINNING_COMBINATIONS
-      return true if positions[combo[0]] && positions[combo[1]] && positions[combo[2]] == :o
+      return true if positions[combo[0]] == :o && positions[combo[1]] == :o && positions[combo[2]] == :o
     end
+
+    false
   end
 
   # Determines if the game is a draw (i.e., all cells are filled with no winner).
@@ -71,5 +87,7 @@ class Board
   end
 end
 
-board = Board.new
-puts board.show
+# board = Board.new
+# puts board.show
+
+# p board.register[4]

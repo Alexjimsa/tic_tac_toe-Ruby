@@ -1,5 +1,6 @@
 require_relative 'tictactoe/board'
 require_relative 'tictactoe/chip'
+# require 'pry_byebug'
 
 # The TicTacToe class manages the main flow of the Tic-Tac-Toe game.
 # It initializes with a board object and tracks the turns between players (X and O).
@@ -17,13 +18,14 @@ class TicTacToe
     @turn = change_turn
     start
     introduce_pos
-    game if keep_playing?
-    p end_game
+    game unless game_over?
+    puts end_game
     play_again
   end
 
   private
 
+  # Changes the ´@turn´ variable value between :o and :x
   def change_turn
     return :o if @turn == :x
 
@@ -32,9 +34,9 @@ class TicTacToe
 
   # This method displays the current board status and asks the user for the next move.
   def start
-    p "#{@turn} turn"
-    p board.show
-    p "introduce the position where you wanna pace the #{@turn}"
+    puts "#{@turn} turn"
+    puts @board.show
+    puts "introduce the position where you wanna pace the #{@turn}"
   end
 
   # Ends the game by checking if it's a draw or if there's a winner.
@@ -47,9 +49,10 @@ class TicTacToe
   def play_again
     p 'What do you want to do?\n1. Play again; 2. Exit'
     option = gets.chomp
-    if option == 1
+    if option == '1'
+      @board.reset
       game
-    elsif option == 2
+    elsif option == '2'
       p 'ok, bye'
     else
       p 'Invalid number, try again'
@@ -60,12 +63,19 @@ class TicTacToe
   # Prompts the player to input a position to place their mark on the board.
   def introduce_pos
     submited_pos = gets.chomp
-    board.position[submited_pos] = @turn
+    if @board.valid_position?(submited_pos)
+      @board.update(submited_pos, @turn)
+    else
+      puts 'Invalid position, try again:'
+      introduce_pos
+    end
   end
 
   # Checks if the game should continue. Returns `false` if there's a winner or a draw.
-  def keep_playing?
-    draw? if winner.nil?
+  def game_over?
+    return true if winner == :x || winner == :o
+
+    draw?
 
     false
   end
@@ -73,19 +83,19 @@ class TicTacToe
   # Determines the winner based on the current board state.
   # Returns `:x` if player X wins, `:o` if player O wins, or `nil` if there is no winner.
   def winner
-    return :x if board.x_wins?
-    return :o if board.o_wins?
+    return :x if @board.x_wins?
+    return :o if @board.o_wins?
 
     nil
   end
 
   # Checks if the game ends in a draw (i.e., no empty positions left).
   def draw?
-    return true unless board.include?(nil)
+    return true unless @board.positions.values.include?(nil)
 
     false
   end
 end
 
-game = TicTacToe.new
-game.game(Board.new)
+game = TicTacToe.new(Board.new)
+game.game
